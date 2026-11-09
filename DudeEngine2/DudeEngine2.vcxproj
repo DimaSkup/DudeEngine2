@@ -1,0 +1,304 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectGuid>{ea803b1f-b5fe-4179-aa67-49b49f89b49e}</ProjectGuid>
+    <RootNamespace>DudeEngine2</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <EnableASAN>false</EnableASAN>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(IncludePath);$(ProjectDir)include\SDL2\include;$(ProjectDir)include\imgui;$(ProjectDir)include\;$(ProjectDir)include\miniaudio\;$(ProjectDir)include\lua\include\</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(ProjectDir)\lib\SDL2\lib\$(Platform);$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)build\$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(IncludePath);$(ProjectDir)include\SDL2\include;$(ProjectDir)include\imgui;$(ProjectDir)include\;$(ProjectDir)include\miniaudio\;$(ProjectDir)include\lua\include\</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64);$(ProjectDir)\lib\SDL2\lib\$(Platform);$(LibraryPath)</LibraryPath>
+    <OutDir>$(SolutionDir)build\$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)include\SDL2\include;;$(ProjectDir)include\imgui;$(ProjectDir)include\</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(ProjectDir)lib\SDL2\lib\$(Platform)</LibraryPath>
+    <OutDir>$(SolutionDir)build\$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir)include\SDL2\include;;$(ProjectDir)include\imgui;$(ProjectDir)include\</IncludePath>
+    <LibraryPath>$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86);$(ProjectDir)lib\SDL2\lib\$(Platform)</LibraryPath>
+    <OutDir>$(SolutionDir)build\$(Platform)\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)include\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)lib\SDL2\$(Platform);</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)include\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)lib\SDL2\$(Platform);</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)include\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)lib\SDL2\$(Platform);</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <AdditionalIncludeDirectories>$(ProjectDir)include\imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>SDL2.lib;SDL2main.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(ProjectDir)lib\SDL2\$(Platform);</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="asset_mgr.cpp" />
+    <ClCompile Include="backends\LDL\ldl_input.cpp" />
+    <ClCompile Include="components\collider.cpp" />
+    <ClCompile Include="components\hierarchy.cpp" />
+    <ClCompile Include="components\movement.cpp" />
+    <ClCompile Include="components\player.cpp" />
+    <ClCompile Include="console.cpp" />
+    <ClCompile Include="image.cpp" />
+    <ClCompile Include="include\miniaudio\miniaudio.c" />
+    <ClCompile Include="lua_lib_enemy.cpp" />
+    <ClCompile Include="lua_lib_entity.cpp" />
+    <ClCompile Include="lua_lib_game.cpp" />
+    <ClCompile Include="lua_lib_input.cpp" />
+    <ClCompile Include="lua_lib_player.cpp" />
+    <ClCompile Include="lua_lib_sound.cpp" />
+    <ClCompile Include="lua_lib_sys.cpp" />
+    <ClCompile Include="lua_lib_text.cpp" />
+    <ClCompile Include="lua_stuff.cpp" />
+    <ClCompile Include="quest_sys.cpp" />
+    <ClCompile Include="r_debug.cpp" />
+    <ClCompile Include="sound.cpp" />
+    <ClCompile Include="noise.cpp" />
+    <ClCompile Include="texture.cpp" />
+    <ClCompile Include="components\sprite.cpp" />
+    <ClCompile Include="components\transform.cpp" />
+    <ClCompile Include="entity_save_load.cpp" />
+    <ClCompile Include="event_mgr.cpp" />
+    <ClCompile Include="file_sys.cpp" />
+    <ClCompile Include="game_state.cpp" />
+    <ClCompile Include="imgui\imgui.cpp" />
+    <ClCompile Include="imgui\imgui_demo.cpp" />
+    <ClCompile Include="imgui\imgui_draw.cpp" />
+    <ClCompile Include="imgui\imgui_impl_sdl2.cpp" />
+    <ClCompile Include="imgui\imgui_impl_sdlrenderer2.cpp" />
+    <ClCompile Include="imgui\imgui_tables.cpp" />
+    <ClCompile Include="imgui\imgui_widgets.cpp" />
+    <ClCompile Include="imgui_layer.cpp" />
+    <ClCompile Include="include\tinyfiledialogs\tinyfiledialogs.c" />
+    <ClCompile Include="input.cpp" />
+    <ClCompile Include="map.cpp" />
+    <ClCompile Include="prefab_creator.cpp" />
+    <ClCompile Include="r_list.cpp" />
+    <ClCompile Include="r_main.cpp" />
+    <ClCompile Include="entity.cpp" />
+    <ClCompile Include="entity_mgr.cpp" />
+    <ClCompile Include="game.cpp" />
+    <ClCompile Include="log.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="ui_ed_state.cpp" />
+    <ClCompile Include="ui_font.cpp" />
+    <ClCompile Include="ui_text_mgr.cpp" />
+    <ClCompile Include="timer.cpp" />
+    <ClCompile Include="ui_editor.cpp" />
+    <ClCompile Include="ui_editor_entts.cpp" />
+    <ClCompile Include="ui_editor_tilemap.cpp" />
+    <ClCompile Include="ui_facade_engine.cpp" />
+    <ClCompile Include="ui_game.cpp" />
+    <ClCompile Include="ui_noise_gen.cpp" />
+    <ClCompile Include="ui_utils.cpp" />
+    <ClCompile Include="upng.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="asset_mgr.h" />
+    <ClInclude Include="circle.h" />
+    <ClInclude Include="collision.h" />
+    <ClInclude Include="components\collider.h" />
+    <ClInclude Include="components\component.h" />
+    <ClInclude Include="components\damage.h" />
+    <ClInclude Include="components\enemy.h" />
+    <ClInclude Include="components\health.h" />
+    <ClInclude Include="components\hierarchy.h" />
+    <ClInclude Include="components\keyboard.h" />
+    <ClInclude Include="components\life_timer.h" />
+    <ClInclude Include="components\movement.h" />
+    <ClInclude Include="components\player.h" />
+    <ClInclude Include="components\tile.h" />
+    <ClInclude Include="components\trigger.h" />
+    <ClInclude Include="console.h" />
+    <ClInclude Include="defines.h" />
+    <ClInclude Include="entity_save_load.h" />
+    <ClInclude Include="input_events.h" />
+    <ClInclude Include="event_mgr.h" />
+    <ClInclude Include="file.h" />
+    <ClInclude Include="file_sys.h" />
+    <ClInclude Include="game_state.h" />
+    <ClInclude Include="image.h" />
+    <ClInclude Include="imgui_layer.h" />
+    <ClInclude Include="include\tinyfiledialogs\tinyfiledialogs.h" />
+    <ClInclude Include="input.h" />
+    <ClInclude Include="lua_lib_enemy.h" />
+    <ClInclude Include="lua_lib_entity.h" />
+    <ClInclude Include="lua_lib_game.h" />
+    <ClInclude Include="lua_lib_input.h" />
+    <ClInclude Include="lua_lib_player.h" />
+    <ClInclude Include="lua_lib_sound.h" />
+    <ClInclude Include="lua_lib_sys.h" />
+    <ClInclude Include="lua_lib_text.h" />
+    <ClInclude Include="lua_stuff.h" />
+    <ClInclude Include="macros.h" />
+    <ClInclude Include="map.h" />
+    <ClInclude Include="math_helpers.h" />
+    <ClInclude Include="mem_helpers.h" />
+    <ClInclude Include="noise.h" />
+    <ClInclude Include="prefab_creator.h" />
+    <ClInclude Include="quest_sys.h" />
+    <ClInclude Include="rect.h" />
+    <ClInclude Include="r_debug.h" />
+    <ClInclude Include="r_list.h" />
+    <ClInclude Include="components\sprite.h" />
+    <ClInclude Include="r_main.h" />
+    <ClInclude Include="components\transform.h" />
+    <ClInclude Include="consts.h" />
+    <ClInclude Include="cvector.h" />
+    <ClInclude Include="entity.h" />
+    <ClInclude Include="entity_mgr.h" />
+    <ClInclude Include="game.h" />
+    <ClInclude Include="log.h" />
+    <ClInclude Include="sound.h" />
+    <ClInclude Include="ui_ed_state.h" />
+    <ClInclude Include="ui_font.h" />
+    <ClInclude Include="ui_text_mgr.h" />
+    <ClInclude Include="texture.h" />
+    <ClInclude Include="timer.h" />
+    <ClInclude Include="types.h" />
+    <ClInclude Include="ui_editor.h" />
+    <ClInclude Include="ui_editor_entts.h" />
+    <ClInclude Include="ui_facade_engine.h" />
+    <ClInclude Include="ui_editor_tilemap.h" />
+    <ClInclude Include="ui_game.h" />
+    <ClInclude Include="ui_noise_gen.h" />
+    <ClInclude Include="ui_utils.h" />
+    <ClInclude Include="upng.h" />
+    <ClInclude Include="vec.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
