@@ -9,7 +9,7 @@
     ******     ******   ******    ********
 
     Filename:   main.cpp
-    Desc:       obviously, we starts from here
+    Desc:       obviously, we start from here
     Created:    by DimaSkup
 \**********************************************************************************/
 #include "game.h"

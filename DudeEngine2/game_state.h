@@ -20,6 +20,8 @@
 // struct for common game data
 struct GameState
 {
+    void* pRT;      // TEMP!
+
     float    deltaTime;
     float    gameTime;
 

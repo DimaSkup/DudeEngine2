@@ -498,6 +498,7 @@ Texture* AssetMgr::LoadTexture(const char* filepath)
 
     // enable alpha blending
     SetTextureBlendMode(pTex, BLENDMODE_BLEND);
+    //SetTextureBlendMode(pTex, BLENDMODE_NONE);
 
     // update a texture with raw pixels
     const uint bytesPerPixel = 4;

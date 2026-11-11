@@ -182,7 +182,8 @@ void SaveSprite(FILE* fp, const Entity* pEntt)
     else
     {
         PrintOffset(fp, 3);
-        fprintf(fp, "texture: %s\n", g_AssetMgr.GetTexName(pSpr->GetTex(ANIM_TYPE_IDLE)));
+        const TexID texId = pSpr->GetTexId(ANIM_TYPE_IDLE);
+        fprintf(fp, "texture: %s\n", g_AssetMgr.GetTexName(texId));
     }
 }
 

@@ -153,6 +153,19 @@ void UI_EditorEntts::RenderEnttData()
 
     ImGui::Separator();
 
+
+
+
+
+    // visualize the texture
+    if (g_GameState.pRT)
+    {
+        const Texture* tex = (const Texture*)g_GameState.pRT;
+        ImVec2 iconSz = ImVec2(tex->w, tex->h);
+        ImGui::Image((ImTextureID)tex->pTex, iconSz);
+    }
+
+
     //
     // draw properties of the selected entity
     //
@@ -385,7 +398,7 @@ void UI_EditorEntts::DrawWndSelectPrefab(Vec2 startPos)
                     Sprite* spr = prefab->GetComponent<Sprite>();
                     spr->Update(g_GameState.deltaTime);  // update animation (if sprite is animated)
 
-                    const TexID texId = spr->GetTex();
+                    const TexID texId = spr->GetTexId();
                     const Texture* tex = g_pFacadeEngine->GetTex(texId);
 
                     // calc uv for this icon
@@ -687,7 +700,7 @@ TexID LoadTexture()
 //---------------------------------------------------------
 void DrawTextureInfo(Sprite* pSpr, const eAnimType animType)
 {
-    TexID texId = pSpr->GetTex(animType);
+    TexID texId = pSpr->GetTexId(animType);
 
     if (ImGui::Button("Load texture"))
     {

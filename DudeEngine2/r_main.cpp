@@ -29,7 +29,8 @@ CRender g_Render;
 CRender::CRender() :
     pWindow_(nullptr),
     pRenderer_(nullptr),
-    pTexRenderTarget_(nullptr),
+    pCurrRenderTarget_(nullptr),
+    pViewportRenderTarget_(nullptr),
     scale_(1),
     bFullscreen_(false)
 {
@@ -67,7 +68,7 @@ bool CRender::Init()
     }
 
     // for using RenderDoc on Windows (because fucking SDL2 enforces OpenGL 2.1 and RenderDoc fucks up)
-    SDL_SetHint(SDL_HINT_RENDER_DRIVER, "direct3d11");
+    //SDL_SetHint(SDL_HINT_RENDER_DRIVER, "direct3d11");
 
     pWindow_ = SDL_CreateWindow(
         "DudeEngine2",
@@ -109,21 +110,14 @@ bool CRender::Init()
 //---------------------------------------------------------
 // create a render target which is used to render scene into
 //---------------------------------------------------------
-bool CRender::CreateViewportRenderTarget(int wndWidth, int wndHeight)
+bool CRender::CreateViewportRenderTarget(const uint w, const uint h)
 {
-    assert(pTexRenderTarget_ == nullptr);
+    assert(pViewportRenderTarget_ == nullptr);
 
-    if (wndWidth <= 0 || wndHeight <= 0)
+    pViewportRenderTarget_ = CreateRenderTarget(w, h);
+    if (!pViewportRenderTarget_)
     {
-        LogErr(LOG, "invalid window dimensions (w: %d, h: %d)", wndWidth, wndHeight);
-        return false;
-    }
-
-    // create a render target
-    pTexRenderTarget_ = CreateRenderTarget(wndWidth, wndHeight);
-    if (!pTexRenderTarget_)
-    {
-        LogErr(LOG, "can't create a render target");
+        LogErr(LOG, "can't create a render target for the VIEWPORT");
         Shutdown();
         return false;
     }
@@ -132,13 +126,29 @@ bool CRender::CreateViewportRenderTarget(int wndWidth, int wndHeight)
 }
 
 //---------------------------------------------------------
+// create a new texture which will serve as a RENDER TARGET
+//---------------------------------------------------------
+Texture* CRender::CreateRenderTarget(const uint w, const uint h)
+{
+    assert(w > 0 && h > 0);
+
+    Texture* pTex = CreateTextureRenderTarget(w, h);
+    if (!pTex)
+        LogErr(LOG, "can't create a render target");
+        
+    return pTex;
+}
+
+//---------------------------------------------------------
 // shutdown the renderer
 //---------------------------------------------------------
 void CRender::Shutdown()
 {
+    UnbindRenderTargets();
+
     // shutdown SDL stuff
-    if (pTexRenderTarget_)
-        DestroyTexture(pTexRenderTarget_);
+    if (pViewportRenderTarget_)
+        DestroyTexture(pViewportRenderTarget_);
 
     SDL_DestroyRenderer(pRenderer_);
     SDL_DestroyWindow(pWindow_);
@@ -195,19 +205,27 @@ Recti CRender::GetWndRecti() const
 //---------------------------------------------------------
 // attach a render target to render scene into
 //---------------------------------------------------------
-void CRender::AttachRenderTarget()
+void CRender::BindRenderTarget(const Texture* pRenderTarget)
 {
-    SDL_SetRenderTarget(pRenderer_, pTexRenderTarget_->pTex);
-    SDL_SetRenderDrawColor(pRenderer_, 255, 255, 255, 255);
-    SDL_RenderClear(pRenderer_);
+    // reset to default render target
+    if (pRenderTarget == NULL)
+    {
+        UnbindRenderTargets();
+        return;
+    }
+
+    assert(pRenderTarget->pTex);
+    pCurrRenderTarget_ = pRenderTarget;
+    SDL_SetRenderTarget(pRenderer_, pRenderTarget->pTex);
 }
 
 //---------------------------------------------------------
 // detach render targets, reset to default
 //---------------------------------------------------------
-void CRender::DetachRenderTarget()
+void CRender::UnbindRenderTargets()
 {
     // reset to default render target
+    pCurrRenderTarget_ = nullptr;
     SDL_SetRenderTarget(pRenderer_, NULL);
 }
 
@@ -483,4 +501,74 @@ void CRender::DrawRect(Texture* pTex,
 void CRender::ShowSysCursor(const bool showHide)
 {
     SDL_ShowCursor(showHide);
+}
+
+//---------------------------------------------------------
+// sample a single texel from input texture by coords <tx, ty>
+// and return its color
+//---------------------------------------------------------
+Color CRender::SampleTexel(const Texture* pTex, const uint tx, const uint ty)
+{
+    assert(pTex);
+    assert(pTex->pTex && "SDL_Texture isn't initialized!");
+    
+    int w = 0;
+    int h = 0;
+
+    if (SDL_QueryTexture(pTex->pTex, NULL, NULL, &w, &h) != 0)
+    {
+        LogErr(LOG, "can't get texture size: %s", SDL_GetError());
+        return Color{};
+    }
+
+    if ((int)tx > w || (int)ty > h)
+    {
+        LogErr(LOG, "texel coords (%d, %d) is out of texture (size: %d, %d)", tx, ty, w, h);
+        return Color{};
+    }
+
+
+    // create a temporary 1x1 render target
+    SDL_Texture* pTarget = SDL_CreateTexture(pRenderer_,
+                                             SDL_PIXELFORMAT_RGBA32,
+                                             SDL_TEXTUREACCESS_TARGET,
+                                             1, 1);
+    if (!pTarget)
+    {
+        LogErr(LOG, "can't create a temp 1x1 render target: %s", SDL_GetError());
+        return Color{};
+    }
+
+    // save current render target
+    SDL_Texture* pOldTarget = SDL_GetRenderTarget(pRenderer_);
+
+    // set temp target
+    SDL_SetRenderTarget(pRenderer_, pTarget);
+
+    // copy the desired texel into the 1x1 target
+    SDL_Rect src = { (int)tx, (int)ty, 1, 1 };
+    SDL_Rect dst = { 0, 0, 1, 1 };
+
+    SDL_RenderCopy(pRenderer_, pTex->pTex, &src, &dst);
+
+    // read pixel from the render target
+    uint8 pixel[4];
+
+    if (SDL_RenderReadPixels(pRenderer_, nullptr, SDL_PIXELFORMAT_RGBA32, pixel, sizeof(pixel)) != 0)
+    {
+        LogErr(LOG, "can't read a pixel from the render target: %s", SDL_GetError());
+        return Color{};
+    }
+
+    // restore the previous target
+    SDL_SetRenderTarget(pRenderer_, pOldTarget);
+    SDL_DestroyTexture(pTarget);
+
+    Color c;
+    c.r = pixel[0];
+    c.g = pixel[1];
+    c.b = pixel[2];
+    c.a = pixel[3];
+
+    return c;
 }

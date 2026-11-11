@@ -74,13 +74,13 @@ enum eBlendMode
 //========================================================================
 // FUNCTIONS
 //========================================================================
-void     DestroyTexture     (Texture* pTex);
-Texture* CreateTexture      (const uint width, const uint height);
-Texture* CreateRenderTarget (const uint width, const uint height);
-void     SetTextureBlendMode(Texture* pTex, const eBlendMode blendMode);
-bool     UpdateTexture      (Texture* pTex, const Rect* rect, const void* pixels, int pitch);
+void     DestroyTexture           (Texture* pTex);
+Texture* CreateTexture            (const uint width, const uint height);
+Texture* CreateTextureRenderTarget(const uint width, const uint height);
+void     SetTextureBlendMode      (Texture* pTex, const eBlendMode blendMode);
+bool     UpdateTexture            (Texture* pTex, const Rect* rect, const void* pixels, int pitch);
 
-void     SetTextureColorMod (Texture* tex, uint8 r, uint8 g, uint8 b);
-int      SetTextureAlphaMod (Texture* pTex, uint8 alpha);
+void     SetTextureColorMod       (Texture* tex, uint8 r, uint8 g, uint8 b);
+int      SetTextureAlphaMod       (Texture* pTex, uint8 alpha);
 
 #endif

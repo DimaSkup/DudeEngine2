@@ -113,8 +113,8 @@ public:
     void             SetupAnimation(const eAnimType type, const Animation& anim);
 
     void             SetTex(eAnimType type, TexID texId);
-    TexID            GetTex(void) const;
-    TexID            GetTex(eAnimType type) const;
+    TexID            GetTexId(void) const;
+    TexID            GetTexId(eAnimType type) const;
 
     void             SetAnimFrame(const uint frameIdx);
     void             SetColor(uint8 r, uint8 g, uint8 b, uint8 a);
@@ -153,6 +153,11 @@ public:
     bool                 IsFixedOnScreen()      const { return bFixedOnScreen_; }
     bool                 IsShow()               const { return bShow_; }
 
+    eRendererFlip        GetFlipMode()          const { return spriteFlip_; }
+    Vec2i                GetRotationCenter()    const { return rotationCenter_; }
+    float                GetRotationAngle()     const { return rotationAngle_; }
+
+
     const Animation& GetAnimByType(eAnimType type);
     const Animation& GetAnimByType(eAnimType type) const;
 
@@ -169,6 +174,9 @@ private:
     float           currFrameTime_;
     uint            animIndex_;             // animation index (which kind of animation is used on the texture atlas)
     Color           color_;                 // tint: (rgb + alpha)
+
+    Vec2i           rotationCenter_;
+    float           rotationAngle_;
 
     eAnimDir        currAnimDir_;           // currently selected direction
     eAnimType       currAnimType_;          // currently selected animation

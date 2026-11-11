@@ -151,6 +151,8 @@ private:
     void UpdatePlayerEnttState(Entity* pEntt);
     void UpdateEnemyEnttState(Entity* pEntt);
 
+    
+
     //
     // render helpers
     //

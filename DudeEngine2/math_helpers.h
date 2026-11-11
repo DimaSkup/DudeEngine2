@@ -94,7 +94,14 @@ inline float frac(const float f)
 
 inline float lerp(const float a, const float b, const float factor)
 {
-    return (a * factor + (1.0f - factor) * b);
+    return (a * (1.0f - factor) + b * factor);
+}
+
+// ----------------------------------------------------
+
+inline double lerpd(const double a, const double b, const double factor)
+{
+    return (a * (1.0 - factor) + b * factor);
 }
 
 // ----------------------------------------------------

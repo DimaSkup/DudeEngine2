@@ -30,14 +30,15 @@ void DestroyTexture(Texture* tex)
 //---------------------------------------------------------
 // create an empty texture
 //---------------------------------------------------------
-Texture* CreateTexture(const uint width, const uint height)
+Texture* CreateTexture(const uint w, const uint h)
 {
+    assert(w > 0 && h > 0 && "invalid dimensions");
+
     Texture* tex = new Texture;
     tex->pTex = SDL_CreateTexture(g_Render.pRenderer_,
                                   SDL_PIXELFORMAT_RGBA32,
                                   SDL_TEXTUREACCESS_STATIC,
-                                  width,
-                                  height);
+                                  w, h);
     if (!tex->pTex)
     {
         LogErr(LOG, "can't create an SDL texture");
@@ -47,8 +48,8 @@ Texture* CreateTexture(const uint width, const uint height)
         return nullptr;
     }
 
-    tex->w = (uint16)width;
-    tex->h = (uint16)height;
+    tex->w = (uint16)w;
+    tex->h = (uint16)h;
 
     return tex;
 }
@@ -56,14 +57,15 @@ Texture* CreateTexture(const uint width, const uint height)
 //---------------------------------------------------------
 // create a texture which can be used as a render target
 //---------------------------------------------------------
-Texture* CreateRenderTarget(const uint width, const uint height)
+Texture* CreateTextureRenderTarget(const uint w, const uint h)
 {
+    assert(w > 0 && h > 0 && "invalid dimensions");
+
     Texture* tex = new Texture;
     tex->pTex = SDL_CreateTexture(g_Render.pRenderer_,
                                   SDL_PIXELFORMAT_BGRA8888,
                                   SDL_TEXTUREACCESS_TARGET,
-                                  width,
-                                  height);
+                                  w, h);
     if (!tex->pTex)
     {
         LogErr(LOG, "can't create an SDL render target");
@@ -73,8 +75,8 @@ Texture* CreateRenderTarget(const uint width, const uint height)
         return nullptr;
     }
 
-    tex->w = (uint16)width;
-    tex->h = (uint16)height;
+    tex->w = (uint16)w;
+    tex->h = (uint16)h;
 
     return tex;
 }

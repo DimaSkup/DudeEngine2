@@ -84,6 +84,8 @@ Sprite::Sprite(const Sprite* s)
 Sprite::Sprite(const TexID texId, const bool bFixedOnScreen) :
     spriteFlip_(R_FLIP_NONE),
     pTransform_(nullptr),
+    rotationCenter_(0,0),
+    rotationAngle_(0.0f),
     bAnimated_(false),
     bFixedOnScreen_(bFixedOnScreen),
     bShow_(true),
@@ -115,6 +117,8 @@ Sprite::Sprite(const TexID texId, const bool bFixedOnScreen) :
 //-----------------------------------------------------
 Sprite::Sprite(const Animation& anim, const bool bFixedOnScreen) :
     spriteFlip_(R_FLIP_NONE),
+    rotationCenter_(0, 0),
+    rotationAngle_(0.0f),
     bFixedOnScreen_(bFixedOnScreen),
     bAnimated_(true),
     bShow_(true),
@@ -147,6 +151,8 @@ Sprite::Sprite(
     const bool bFixedOnScreen)
     : 
     spriteFlip_(R_FLIP_NONE),
+    rotationCenter_(0, 0),
+    rotationAngle_(0.0f),
     bFixedOnScreen_(bFixedOnScreen),
     bAnimated_(true),
     bShow_(true),
@@ -168,6 +174,7 @@ Sprite::Sprite(
 }
 
 //---------------------------------------------------------
+// 
 //---------------------------------------------------------
 void Sprite::SetAnimPreset(const eAnimPreset preset)
 {
@@ -391,7 +398,7 @@ void Sprite::Render()
 //-----------------------------------------------------
 // get texture ID of the current animation
 //-----------------------------------------------------
-TexID Sprite::GetTex() const
+TexID Sprite::GetTexId() const
 {
     assert(pCurrAnimation_);
     return pCurrAnimation_->texId;
@@ -400,7 +407,7 @@ TexID Sprite::GetTex() const
 //-----------------------------------------------------
 // get ID of texture related to animation by input type
 //-----------------------------------------------------
-TexID Sprite::GetTex(eAnimType type) const
+TexID Sprite::GetTexId(eAnimType type) const
 { 
     assert(type >= 0 && type < NUM_ANIM_TYPES);
     return animations_.at(type).texId; 

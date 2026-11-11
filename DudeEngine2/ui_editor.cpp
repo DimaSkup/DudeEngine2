@@ -91,7 +91,7 @@ void UI_Editor::RenderViewport(Texture* pSceneViewport)
     g_EditorState.bSceneViewportHovered = CollisionRectPoint(winRect, mouse);
 
     // render viewport image
-    const ImVec2 imgSz = { (float)pSceneViewport->w, (float)pSceneViewport->h };
+    const ImVec2 imgSz = ImVec2(pSceneViewport->w, pSceneViewport->h);
     ImGui::Image((ImTextureID)pSceneViewport->pTex, imgSz);
 
     ImGui::End();
@@ -347,7 +347,7 @@ void UI_Editor::DrawCommonInfo()
     }
 
     ImGui::Text("Window size: %dx%d",      s.wndSize.w,    s.wndSize.y);
-    ImGui::Text("Mouse screen pos: %d:%d", s.mousePos.w,   s.mousePos.y);
+    ImGui::Text("Mouse window pos: %d:%d", s.mousePos.w,   s.mousePos.y);
     ImGui::Text("Mouse world pos: %d:%d",  s.mousePosW.x,  s.mousePosW.y);
     ImGui::Text("Camera world pos: %d:%d", s.camPos.x,     s.camPos.y);
     ImGui::Text("World size: %d:%d",       s.iWorldSize.w, s.iWorldSize.h);

@@ -165,7 +165,7 @@ inline float Noise::Value(const float x, const float y)
     const float d = Hash(ix + 1.0f, iy + 1.0f);
 
     // bilinear interpolation
-    return lerp(lerp(a, b, 1.0f - ux), lerp(c, d, 1.0f - ux), 1.0f - uy);
+    return lerp(lerp(a, b, ux), lerp(c, d, ux), uy);
 }
 
 //---------------------------------------------------------

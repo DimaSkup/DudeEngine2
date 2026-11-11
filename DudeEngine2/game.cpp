@@ -594,7 +594,7 @@ void Game::Render()
     else
     {
         // in editor we render scene into a specific render target
-        g_Render.AttachRenderTarget();
+        g_Render.BindRenderTarget(g_Render.GetViewportRenderTarget());
         
         RenderScene();
     }
@@ -617,7 +617,7 @@ void Game::Render()
 
     if (!g_GameState.bGameMode)
     {
-        g_Render.DetachRenderTarget();
+        g_Render.UnbindRenderTargets();
         RenderEditor();
     }
 
@@ -630,7 +630,6 @@ void Game::Render()
     {
         pUiGame_->RenderMouseCursor();
     }
-
 
     // swap front and back buffers
     g_Render.RenderPresent();
@@ -1499,6 +1498,8 @@ void Game::ProcessInputEditor()
                 const Vec2i workAreaPos = ToVec2i(g_GameState.viewportTopLeft);
                 g_GameState.mousePosW.x = m.x + g_GameState.camPos.x - workAreaPos.x;
                 g_GameState.mousePosW.y = m.y + g_GameState.camPos.y - workAreaPos.y;
+
+                //printf("mouseScr: %d %d         mouseW: %d %d\n", m.x, m.y, g_GameState.mousePosW.x, g_GameState.mousePosW.y);
                
                 if (pUiEditor_->IsAnyModalWndOpened())
                     continue;
@@ -1524,8 +1525,7 @@ void Game::ProcessInputEditor()
 
             else if (e.mouse.type == MOUSE_LPRESS)
             { 
-                g_GameState.bStickEnttToMouse = false;
-
+               
                 // prevent change pos of the cell cursor when mouse over the editor's window
                 if (!GetEditor()->IsSceneViewportHovered())
                     continue;
@@ -1543,19 +1543,20 @@ void Game::ProcessInputEditor()
                     case EDITOR_TILEMAP:
                     {
                         if (mouse.button[MOUSE_L].bPressed)
-                        {
-                            //PickEntt(g_GameState.mousePosW, LAYER_TILEMAP);
                             GetEditor()->ModifyMapTile(g_GameState.mousePosW);
-                        }
                         break;
                     }
 
                     case EDITOR_ENTITIES:   
                     {
-                        // if we are moving or spawning an entity
-                        if (IsKeyPressed(KEY_LALT) || IsKeyPressed(KEY_LCTRL))
+                        // stop moving a selected entity 
+                        if (GetEditor()->IsAnyEnttSelected() && g_GameState.bStickEnttToMouse)
+                        {
+                            g_GameState.bStickEnttToMouse = false;
                             break;
+                        }
 
+                        // pick another entity
                         const eLayerType selectableLayer = GetEditor()->GetSelectableLayer();
                         const EntityID pickedId = PickEntt(g_GameState.mousePosW, selectableLayer);
                         GetEditor()->SetSelectedEntt(pickedId);
@@ -1565,6 +1566,14 @@ void Game::ProcessInputEditor()
 
                     case EDITOR_PREFABS:    
                     {
+                        // stop moving a selected entity 
+                        if (GetEditor()->IsAnyEnttSelected() && g_GameState.bStickEnttToMouse)
+                        {
+                            g_GameState.bStickEnttToMouse = false;
+                            break;
+                        }
+
+
                         // spawn an entity:
                         // 1. select a prefab
                         // 2. LCtrl + LMB onto the scene
@@ -1594,12 +1603,12 @@ void Game::ProcessInputEditor()
                         const Vec2i initPos = Vec2iSub(g_GameState.mousePosW, offset);
                         t->SetPos(initPos);
 
-                        if (pNewEntt->HasComponent<Sprite>())
+                        Sprite* pSpr = pNewEntt->GetComponent<Sprite>();
+                        if (pSpr)
                         {
                             // for animated sprites there can be glitch when the entity is invisible after creation
                             // so force updating its sprite to make it visible
-                            Sprite* spr = pNewEntt->GetComponent<Sprite>();
-                            spr->Update(1.0f);
+                            pSpr->Update(1.0f);
                         }
 
                         bEntityCreated = true;      
@@ -1653,6 +1662,7 @@ void Game::ProcessInputEditor()
             {
                 SaveLevel();
             } 
+
             // Ctrl + D: duplicate the active (selected) entity
             else if (IsKeyPressed(KEY_LCTRL) && (key == KEY_D && !bRepeat))
             {
@@ -1771,14 +1781,214 @@ void Game::ProcessInputEditor()
     }
 }
 
+
+//---------------------------------------------------------
+// render all the input items onto the screen
+//---------------------------------------------------------
+void DrawRenderItems(const cvector<RenderItem>& items)
+{
+    TexID texId = -1;
+    Texture* pTex = nullptr;
+
+    // rotation params
+    const Vec2i* pCenter = nullptr;
+    const float angle = 0.0f;
+
+    for (const RenderItem& it : items)
+    {
+        // select another texture if need
+        if (texId != it.texId)
+        {
+            texId = it.texId;
+            pTex = g_AssetMgr.GetTex(texId);
+        }
+
+        g_Render.DrawRect(pTex, it.srcRect, it.dstRect, it.color, it.flipMode, pCenter, angle);
+    }
+}
+
+//---------------------------------------------------------
+// convert RGBA color into ABGR
+//---------------------------------------------------------
+uint32 RGBAtoABGR(uint8 r, uint8 g, uint8 b, uint8 a)
+{
+    return (a << 24) | (b << 16) | (g << 8) | r;
+}
+
+//---------------------------------------------------------
+// PICKING: narrow phase
+// 1. render all the input entities into a specific temp render target
+// 2. sample a target pixel color (from this temp render target) under the mouse cursor
+// 3. sample a pixel color for each entity under the mouse cursor and compare it
+//    with target pixel color
+//---------------------------------------------------------
+EntityID GetPickedEnttId(Entity* const* entities, 
+                         const int numEntts, 
+                         const Vec2 posW)
+{
+    assert(entities);
+
+    EntityID pickedEnttId = 0;
+
+    //
+    // define a size of the temp render target
+    //
+    Vec2 min = { FLT_MAX, FLT_MAX };
+    Vec2 max = { FLT_MIN, FLT_MIN };
+
+    for (int i = 0; i < numEntts; ++i)
+    {
+        const Entity* pEntt = entities[i];
+        assert(pEntt);
+
+        const Transform* t = pEntt->GetComponent<Transform>();
+        const Sprite* pSpr = pEntt->GetComponent<Sprite>();
+        if (!pSpr)
+            continue;
+
+        Recti dst = pSpr->GetDstRect();
+
+        if (dst.x0 < min.x) min.x = (float)dst.x0;
+        if (dst.x1 > max.x) max.x = (float)dst.x1;
+        if (dst.y0 < min.y) min.y = (float)dst.y0;
+        if (dst.y1 > max.y) max.y = (float)dst.y1;
+    }
+
+    const Vec2i renderTargetSz = ToVec2i({ max.x - min.x, max.y - min.y });
+    assert(renderTargetSz.w > 0 && renderTargetSz.h > 0);
+
+
+    //
+    // push input entities for rendering
+    //
+    ClearRenderLists();
+    const Vec2i iMin = { (int)min.x, (int)min.y };
+    const eLayerType layer = entities[0]->GetLayer();
+
+    const uint32 targetColors[] = {     // use these colors to tint entities
+        0xFFFF0000,  // red
+        0xFF00FF00,  // green
+        0xFF0000FF,  // blue
+        0xFF00FFFF,  // yellow
+        0xFFFF00FF,  // magenta
+        0xFFFFFF00,  // cyan
+        0xFFFFFFFF,  // white
+        0xFF808080,  // gray
+        0xFF404040,  // dark Gray
+        0xFFC0C0C0,  // silver
+        0xFF0080FF,  // orange
+        0xFF8000FF,  // purple
+        0xFF008000,  // dark Green
+        0xFF000080,  // dark Blue
+        0xFF800000,  // dark Red
+        0xFF000000,  // black
+    };
+    assert(numEntts <= ARRAY_SIZE(targetColors));
+
+    for (int i = 0; i < numEntts; ++i)
+    {
+        const Entity* pEntt = entities[i];
+        const Sprite* pSpr = pEntt->GetComponent<Sprite>();
+        if (!pSpr)
+            continue;
+
+        assert((layer == pEntt->GetLayer()) && "all the input entities must belong to the same layer");
+
+        // correct the destination position (to fit in the temp render target)
+        Recti dst = pSpr->GetDstRect();
+        dst.y0 -= iMin.y;
+        dst.y1 -= iMin.y;
+
+        // render the same entity 3 times in row (just shift it by X by 1 pixel)
+        const int offX[] = {
+            -iMin.x - 1,  // shift left
+            -iMin.x,      // center image (original),
+            -iMin.x + 1,  // shift right
+        };
+
+        for (int j = 0; j < ARRAY_SIZE(offX); ++j)
+        {
+            const Recti tmpDst = { dst.x0 + offX[j], dst.x1 + offX[j], dst.y0, dst.y1 };
+
+            // render multiple times to make it to have a fucking desired tint
+            for (int r = 0; r < 10; ++r)
+            {
+                PushItemToRender(layer,
+                    pSpr->GetTexId(),
+                    pSpr->GetSrcRect(),
+                    tmpDst,
+                    Color{ targetColors[i] },
+                    pSpr->GetFlipMode(),
+                    pSpr->GetZIndex());
+            }
+        }
+
+    }
+
+    //
+    // create and bind a temporal render target
+    //
+
+    // release the prev temp RT
+    if (g_GameState.pRT)
+        DestroyTexture((Texture*)g_GameState.pRT);
+    
+    const Texture* pOldRT = g_Render.GetCurrentRenderTarget();
+    Texture* pRT = g_Render.CreateRenderTarget(renderTargetSz.w, renderTargetSz.h);
+    g_GameState.pRT = pRT;
+
+    g_Render.BindRenderTarget(pRT);
+    g_Render.SetDrawColor(0, 0, 0, 255);
+    g_Render.BeginFrame();
+
+    //
+    // sort entities by Y and render them into temporal render target
+    //
+    SortRenderListItemsByY(entities[0]->GetLayer());
+    DrawRenderItems(g_RenderLists[layer].items);
+    ClearRenderLists();
+
+    //
+    // sample a 1x1 texel from the temp render target
+    //
+    const int tx = g_GameState.mousePos.x - iMin.x - (int)g_GameState.viewportTopLeft.x;
+    const int ty = g_GameState.mousePos.y - iMin.y - (int)g_GameState.viewportTopLeft.y;
+    const SDL_Rect pixelRect{ tx, ty, 1, 1 };
+
+    Uint32 pixel = 0;
+    int res = SDL_RenderReadPixels(g_Render.GetRenderer(), &pixelRect, SDL_PIXELFORMAT_ABGR8888, &pixel, 4);
+    if (res != 0)
+    {
+        LogErr(LOG, "can't get a pixel from render target: %s", SDL_GetError());
+        return INVALID_ENTT_ID;
+    }
+
+    g_Render.BindRenderTarget(pOldRT);
+
+    //
+    // define which exact entity was picked
+    //
+    for (size_t i = 0; i < numEntts; ++i)
+    {
+        // if two colors are near similar (both has red tint, or blue, etc.)
+        const uint32 c = pixel & targetColors[i];
+        if (c == pixel)
+            return entities[i]->GetId();
+    }
+
+    return pickedEnttId;
+}
+
+
 //---------------------------------------------------------
 // Desc:  change selection of entity on the scene (picking)
-// Args:  pos    - position in world to test for picking
+// Args:  posW   - position in world to test for picking
 //        layer  - test entities which belongs only to this layer
 // Ret:   ID of picked entity or 0 if no selection
 //---------------------------------------------------------
-EntityID Game::PickEntt(const Vec2i pos, const eLayerType layer)
+EntityID Game::PickEntt(const Vec2i posW, const eLayerType layer)
 {
+  
     // picking a tile of the map (ground) isn't allowed
     if (layer == LAYER_TILEMAP)
         return INVALID_ENTT_ID;
@@ -1792,7 +2002,14 @@ EntityID Game::PickEntt(const Vec2i pos, const eLayerType layer)
     assert(pCursor);
     assert(pFog);
 
-    for (const Entity* pEntt : g_EnttMgr.GetEnttsByLayer(layer))
+    //
+    // PICKING: broad phase
+    // (gather entities which boundings are intersected with input position)
+    //
+    Entity* entities[16]{ nullptr };
+    int numEntts = 0;
+
+    for (Entity* pEntt : g_EnttMgr.GetEnttsByLayer(layer))
     {
         if (!pEntt)
             continue;
@@ -1816,13 +2033,22 @@ EntityID Game::PickEntt(const Vec2i pos, const eLayerType layer)
         // test picking
         const Transform* t = pEntt->GetComponent<Transform>();
 
-        if (!CollisionRectPoint(t->GetRecti(), pos))
+        if (!CollisionRectPoint(t->GetRecti(), posW))
             continue;
         
-        return pEntt->GetId();
+        entities[numEntts] = pEntt;
+        numEntts++;
     }
 
-    return INVALID_ENTT_ID;
+    // no entity is picked
+    if (numEntts == 0)
+        return INVALID_ENTT_ID;
+
+    if (numEntts == 1)
+        return entities[0]->GetId();
+
+    // PICKING: narrow phase (get exact picked entity)
+    return GetPickedEnttId(entities, numEntts, ToVec2(posW));
 }
 
 //---------------------------------------------------------
@@ -1963,31 +2189,6 @@ void Game::UpdateFog()
 }
 
 //---------------------------------------------------------
-// render all the input items onto the screen
-//---------------------------------------------------------
-void DrawRenderItems(const cvector<RenderItem>& items)
-{
-    TexID texId = -1;
-    Texture* pTex = nullptr;
-
-    // rotation params
-    const Vec2i* pCenter = nullptr;
-    const float angle = 0.0f;
-
-    for (const RenderItem& it : items)
-    {
-        // select another texture if need
-        if (texId != it.texId)
-        {
-            texId = it.texId;
-            pTex = g_AssetMgr.GetTex(texId);
-        }
-
-        g_Render.DrawRect(pTex, it.srcRect, it.dstRect, it.color, it.flipMode, pCenter, angle);
-    } 
-}
-
-//---------------------------------------------------------
 // render a translucent fog over the main scene
 //---------------------------------------------------------
 void Game::RenderFogOverScene()
@@ -1997,7 +2198,7 @@ void Game::RenderFogOverScene()
 
     Sprite* pSpr = g_EnttMgr.GetEntt(fogEnttId_)->GetComponent<Sprite>();
 
-    Texture*     pTex    = g_AssetMgr.GetTex(pSpr->GetTex());
+    Texture*     pTex    = g_AssetMgr.GetTex(pSpr->GetTexId());
     const Recti  srcRect = pSpr->GetSrcRect();
     const Color  color   = pSpr->GetColor();
     const uint32 flip    = 0;
@@ -2032,8 +2233,9 @@ void Game::PushVisibleEnttsToRender()
         else
             for (Entity* pEntt : visEntts_[layer].entts)
             {
-                if (pEntt->HasComponent<Sprite>())
-                    pEntt->GetComponent<Sprite>()->Render();
+                Sprite* pSpr = pEntt->GetComponent<Sprite>();
+                if (pSpr)
+                    pSpr->Render();
             }
     }
 }
@@ -2091,7 +2293,7 @@ void Game::RenderScene()
 void Game::RenderEditor()
 {
     imGuiLayer_.Begin();
-    GetEditor()->Render(g_Render.GetRenderTarget());
+    GetEditor()->Render(g_Render.GetViewportRenderTarget());
     imGuiLayer_.End();
 }
 
@@ -2484,8 +2686,8 @@ void Game::CreatePlayer()
 
     // transformation data
     const Vec2 pos = { 0, 0 };
-    const Vec2i sz = { 32, 32 };
-    const int scale = 7;
+    const Vec2i sz = { 224, 224 };
+    const int scale = 1;
  
     // collider data (circle)
     const Vec2i colliderCenter = { 107, 200 };

@@ -33,6 +33,9 @@
 // forward declaration of internal functions
 //---------------------------------------------------------
 
+// test
+void CreateTestPrefabs();
+
 // enemies
 void CreatePrefabEnemySkeleton();
 void CreatePrefabEnemySpider();
@@ -79,6 +82,9 @@ void LoadPrefabs();
 void CreateAllPrefabs()
 {
 #if 1
+    // test
+    CreateTestPrefabs();
+
     // nature
     CreatePrefabsTrees();
     CreatePrefabsBranches();
@@ -1449,6 +1455,19 @@ void CreatePrefabsBranches()
         spr.SetSrcRectPos(srcRectPos[i]);
         spr.SetSrcRectSize(sizes[i]);
     }
+}
+
+//---------------------------------------------------------
+// prefabs for test purposes
+//---------------------------------------------------------
+void CreateTestPrefabs()
+{
+    Entity* pPrefab = g_EnttMgr.AddPrefab("greenTriangle_", LAYER_ENTITY);
+
+                  pPrefab->AddComponent<Transform>(Vec2(0, 0), Vec2i(64, 64), 1);
+    Sprite& spr = pPrefab->AddComponent<Sprite>(g_AssetMgr.GetTexId("green_triangle"), false);
+
+    spr.SetSrcRectSize(Vec2i(64, 64));
 }
 
 //---------------------------------------------------------
